@@ -74,7 +74,7 @@
         public LegacyAudioResult Result { get; }
 
         /// <inheritdoc/>
-#if !NET5_0
+#if !NET6_0
         [System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.Demand, SerializationFormatter = true)]
 #endif
         public override void GetObjectData(SerializationInfo info, StreamingContext context)

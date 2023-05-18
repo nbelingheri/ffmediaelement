@@ -53,6 +53,7 @@
     </PackageReleaseNotes>
     <RepositoryUrl>https://github.com/unosquare/ffmediaelement</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <TargetFrameworks>net6.0-windows</TargetFrameworks>
 
   </PropertyGroup>
 
