@@ -104,6 +104,7 @@
             // 2021-12-16 Moved this outside of the sync block, to avoid deadlock (#576)
             if (IsDisposed || IsDisposing)
                 return Task.FromResult(WorkerState);
+
             lock (SyncLock)
             {
                 if (WorkerState != WorkerState.Running)

@@ -42,7 +42,7 @@
             try
             {
                 // Include the ffmpeg directory in the search path
-                var loadResult = LibraryLoader.LoadNativeLibrary(
+                var loadResult = WindowsFunctionResolver.LoadLibrary(
                     Path.Combine(Library.FFmpegDirectory, SoundTouchLibrary));
 
                 if (loadResult == IntPtr.Zero)
