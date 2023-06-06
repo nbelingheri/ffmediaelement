@@ -2,7 +2,6 @@
 {
     using System.Windows;
     using System.Windows.Controls;
-    using System.Windows.Data;
     using System.Windows.Media;
 
     /// <summary>
@@ -57,20 +56,10 @@
         protected override Image CreateHostedElement()
         {
             var control = new Image();
-            BindingOperations.SetBinding(control, HorizontalAlignmentProperty, new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(HorizontalAlignment)),
-                Mode = BindingMode.OneWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-            });
-            BindingOperations.SetBinding(control, VerticalAlignmentProperty, new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(VerticalAlignment)),
-                Mode = BindingMode.OneWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-            });
+            control.BeginInit();
+            control.HorizontalAlignment = HorizontalAlignment.Stretch;
+            control.VerticalAlignment = VerticalAlignment.Stretch;
+            control.EndInit();
             return control;
         }
     }

@@ -666,15 +666,12 @@ namespace Unosquare.FFME.Container
 
                         // Setup the necessary context callbacks
                         CustomInputStreamRead = CustomInputStream.Read;
-                        CustomInputStreamSeek = CustomInputStream.Seek;
+                        CustomInputStreamSeek = CustomInputStream.CanSeek ? CustomInputStream.Seek : null;
 
                         // Allocate the read buffer
                         var inputBuffer = (byte*)ffmpeg.av_malloc((ulong)CustomInputStream.ReadBufferLength);
                         CustomInputStreamContext = ffmpeg.avio_alloc_context(
                             inputBuffer, CustomInputStream.ReadBufferLength, 0, null, CustomInputStreamRead, null, CustomInputStreamSeek);
-
-                        // Set the seekable flag based on the custom input stream implementation
-                        CustomInputStreamContext->seekable = CustomInputStream.CanSeek ? 1 : 0;
 
                         // Assign the AVIOContext to the input context
                         inputContextPtr->pb = CustomInputStreamContext;
