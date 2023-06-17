@@ -77,6 +77,11 @@
                     if (readCount > 0)
                         Marshal.Copy(ReadBuffer, 0, (IntPtr)targetBuffer, readCount);
 
+                    if (readCount == 0)
+                    {
+                        return ffmpeg.AVERROR_EOF;
+                    }
+
                     return readCount;
                 }
                 catch (Exception)
