@@ -571,7 +571,7 @@
             foreach (var t in newMediaTypes)
             {
                 if (MediaCore.Blocks.ContainsKey(t) == false)
-                    MediaCore.Blocks[t] = new MediaBlockBuffer(Constants.GetMaxBlocks(t, MediaCore), t);
+                    MediaCore.Blocks[t] = new MediaBlockBuffer(Constants.GetMaxBlocks(t, MediaCore), t, MediaCore.Container.IsLiveStream);
 
                 if (MediaCore.Renderers.ContainsKey(t) == false)
                     MediaCore.Renderers[t] = MediaCore.Connector.CreateRenderer(t, MediaCore);

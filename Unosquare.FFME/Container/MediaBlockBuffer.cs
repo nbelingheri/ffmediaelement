@@ -17,6 +17,11 @@
         #region Private Declarations
 
         /// <summary>
+        /// Indicates if the media type is a live stream.
+        /// </summary>
+        private readonly bool IsLiveStream;
+
+        /// <summary>
         /// The blocks that are available to be filled.
         /// </summary>
         private readonly Queue<MediaBlock> PoolBlocks;
@@ -58,8 +63,10 @@
         /// </summary>
         /// <param name="capacity">The capacity.</param>
         /// <param name="mediaType">Type of the media.</param>
-        public MediaBlockBuffer(int capacity, MediaType mediaType)
+        /// <param name="isLiveStream">Indicates if the media type is a live stream.</param>
+        public MediaBlockBuffer(int capacity, MediaType mediaType, bool isLiveStream)
         {
+            IsLiveStream = isLiveStream;
             Capacity = capacity;
             MediaType = mediaType;
             PoolBlocks = new Queue<MediaBlock>(capacity + 1); // +1 to be safe and not degrade performance
@@ -526,7 +533,9 @@
 
             m_Count = PlaybackBlocks.Count;
             m_RangeStartTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : PlaybackBlocks[0].StartTime;
-            m_RangeEndTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : PlaybackBlocks[PlaybackBlocks.Count - 1].EndTime;
+
+            // m_RangeEndTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : PlaybackBlocks[PlaybackBlocks.Count - 1].EndTime;
+            m_RangeEndTime = PlaybackBlocks.Count == 0 ? TimeSpan.Zero : IsLiveStream ? TimeSpan.FromSeconds(5) : PlaybackBlocks[PlaybackBlocks.Count - 1].EndTime;
             m_RangeDuration = TimeSpan.FromTicks(RangeEndTime.Ticks - RangeStartTime.Ticks);
             m_RangeMidTime = TimeSpan.FromTicks(m_RangeStartTime.Ticks + (m_RangeDuration.Ticks / 2));
             m_CapacityPercent = Convert.ToDouble(m_Count) / Capacity;

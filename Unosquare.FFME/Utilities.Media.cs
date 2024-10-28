@@ -56,7 +56,7 @@
             }
 
             // Build the result
-            var result = new MediaBlockBuffer(outputFrames.Count, sourceType);
+            var result = new MediaBlockBuffer(outputFrames.Count, sourceType, tempContainer.IsLiveStream);
             foreach (var frame in outputFrames)
             {
                 result.Add(frame, tempContainer);
