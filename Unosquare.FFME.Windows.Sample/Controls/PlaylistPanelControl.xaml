@@ -80,6 +80,10 @@
                         </Style.Triggers>
                     </Style>
                 </Grid.Style>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <Border CornerRadius="8" BorderThickness="1" Padding="10,2,10,2" Background="#ddffffff" Margin="6">
                     <Grid>
                         <TextBlock Text="Full path to file or URL (Press Enter to open)" 
@@ -101,6 +105,10 @@
                     </Grid>
 
                 </Border>
+                <Button x:Name="BrowseFileButton" Grid.Column="1" Style="{DynamicResource ModernButtonStyle}"
+                        Height="Auto" Padding="10" ToolTip="Browse for a file to play ...">
+                    <Path Stretch="Uniform" Data="{Binding Source={StaticResource OpenMenuIcon}, Path=Data}" Fill="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                </Button>
             </Grid>
 
             <!-- The Content -->

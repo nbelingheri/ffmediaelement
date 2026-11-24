@@ -1,7 +1,10 @@
 ﻿namespace Unosquare.FFME.Windows.Sample.Controls
 {
     using Foundation;
+    using Microsoft.Win32;
     using System;
+    using System.IO;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls.Primitives;
     using System.Windows.Input;
@@ -30,6 +33,8 @@
                 await App.ViewModel.Commands.OpenCommand.ExecuteAsync(OpenFileTextBox.Text);
                 e.Handled = true;
             };
+
+            BrowseFileButton.Click += async (s, e) => await BrowseAndOpenFile();
 
             SearchTextBox.IsEnabledChanged += (s, e) =>
             {
@@ -91,6 +96,46 @@
         private void FocusFileBox()
         {
             FocusTextBox(OpenFileTextBox);
+        }
+
+        /// <summary>
+        /// Shows a file dialog so the user can pick a local media file and opens it.
+        /// </summary>
+        private async Task BrowseAndOpenFile()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = "Open Media File",
+                CheckFileExists = true,
+                Multiselect = false,
+                Filter = "Media Files|*.mp4;*.m4v;*.mkv;*.avi;*.mov;*.wmv;*.flv;*.webm;*.mpg;*.mpeg;*.ts;*.m2ts;*.3gp;*.ogv;" +
+                         "*.mp3;*.m4a;*.aac;*.wav;*.flac;*.ogg;*.opus;*.wma|All Files|*.*",
+            };
+
+            try
+            {
+                var currentPath = OpenFileTextBox.Text?.Trim();
+                if (!string.IsNullOrWhiteSpace(currentPath) && Path.IsPathRooted(currentPath))
+                {
+                    var directory = Directory.Exists(currentPath) ? currentPath : Path.GetDirectoryName(currentPath);
+                    if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                        dialog.InitialDirectory = directory;
+                }
+            }
+            catch (ArgumentException)
+            {
+                // The text box contains something that is not a valid path (e.g. a URL); ignore it.
+            }
+            catch (NotSupportedException)
+            {
+                // Same as above for paths with unsupported formats.
+            }
+
+            if (dialog.ShowDialog(Window.GetWindow(this)) != true)
+                return;
+
+            OpenFileTextBox.Text = dialog.FileName;
+            await App.ViewModel.Commands.OpenCommand.ExecuteAsync(dialog.FileName);
         }
     }
 }
