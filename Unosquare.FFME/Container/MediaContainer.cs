@@ -735,7 +735,8 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             // Setup initial state variables
             Metadata = FFDictionary.ToDictionary(InputContext->metadata);
 
-            // If read_play is set, it is only relevant to network streams
+            // AVInputFormat.read_play is no longer public since FFmpeg 7, so network
+            // streams are detected by input format name, protocol, or a non-file URI.
             IsNetworkStream = false;
             {
                 var formatName = Utilities.PtrToStringUTF8(InputContext->iformat->name).Trim();

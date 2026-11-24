@@ -271,6 +271,13 @@ public static partial class Library
                 try
                 {
                     FFmpegVersionInfo = ffmpeg.av_version_info();
+
+                    // Global network (sockets/TLS) initialization for network streams (http, rtsp, rtmp, udp, srt, hls, etc.)
+                    ffmpeg.avformat_network_init();
+
+                    // Required for capture device streams (dshow, gdigrab, etc.) via device:// URIs.
+                    RegisterInputDevices();
+
                     m_IsInitialized = true;
                 }
                 catch
@@ -370,4 +377,20 @@ public static partial class Library
     /// The seek index object.
     /// </returns>
     public static VideoSeekIndex CreateVideoSeekIndex(string mediaSource) => CreateVideoSeekIndex(mediaSource, -1);
+
+    /// <summary>
+    /// Registers the libavdevice input devices so that they become available as input formats.
+    /// Failure is tolerated because libavdevice is optional for regular file and network playback.
+    /// </summary>
+    private static void RegisterInputDevices()
+    {
+        try
+        {
+            ffmpeg.avdevice_register_all();
+        }
+        catch
+        {
+            // libavdevice is not available. Device input formats will not be registered.
+        }
+    }
 }
