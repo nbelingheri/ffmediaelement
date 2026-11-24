@@ -1,20 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop" ToolsVersion="Current">
-
-  <Choose>
-    <When Condition="'$(Configuration)' == 'debug'">
-      <PropertyGroup>
-        <TargetFrameworks>net8.0-windows</TargetFrameworks>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>Unosquare.FFME</RootNamespace>
@@ -28,38 +16,34 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NeutralLanguage>en</NeutralLanguage>
 
-    <!-- Assembly Version Information -->
-    <AssemblyVersion>7.0.361.1</AssemblyVersion>
-    <FileVersion>7.0.361.1</FileVersion>
+    <!-- Version information is defined in Directory.Build.props -->
 
     <!-- NuGet Package Properties -->
     <!-- https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets#pack-target -->
-    <PackageId>FFME.Windows</PackageId>
-    <PackageVersion>7.0.361-beta.1</PackageVersion>
-    <Version>7.0.361-beta.1</Version>
+    <PackageId>nbelingheri.FFME.Windows</PackageId>
     <Authors>Mario Di Vece, and Contributors to the FFME project</Authors>
     <Title>FFME: The Adavanced WPF MediaElement Alternative</Title>
     <Description>FFME is an advanced WPF MediaElement alternative. While the standard MediaElement uses DirectX (DirectShow) for media playback, FFME uses FFmpeg to read and decode audio and video.</Description>
     <Copyright>Unosquare SA de CV, Mario Di Vece, and Contributors, (C) 2015-2024</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/unosquare/ffmediaelement</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/nbelingheri/ffmediaelement</PackageProjectUrl>
     <PackageIcon>ffme.png</PackageIcon>
     <PackageTags>ffme hls wpf ffmpeg mediaelement h264 h265 hevc audio video decoding playback frame</PackageTags>
     <PackageReleaseNotes>
-      This is a release package of the Floyd Engine build referencing bindings to FFmpeg version 4.4
-      This package does not contain the required FFmpeg binaries. Please refer to the following URL for instructions on how to obtain the binaries: https://github.com/unosquare/ffmediaelement
-      Release details: https://github.com/unosquare/ffmediaelement/milestone/16?closed=1
+      This is a release package of the Floyd Engine build referencing bindings to FFmpeg version $(FFmpegVersion)
+      This package does not contain the required FFmpeg binaries. Please refer to the following URL for instructions on how to obtain the binaries: https://github.com/nbelingheri/ffmediaelement
+
     </PackageReleaseNotes>
-    <RepositoryUrl>https://github.com/unosquare/ffmediaelement</RepositoryUrl>
+    <RepositoryUrl>https://github.com/nbelingheri/ffmediaelement</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)\Support\readme.txt" Pack="true" PackagePath="" />
-    <None Include="$(SolutionDir)\LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(SolutionDir)\Support\ffme.png" Pack="true" PackagePath="" />
+    <None Include="..\Support\readme.txt" Pack="true" PackagePath="" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\Support\ffme.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,7 +63,7 @@
 
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="9.0.1.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.401">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="11.0.100">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -87,15 +71,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' AND '$(TargetFramework)' != 'netcoreapp3.1' AND '$(TargetFramework)' != 'net8.0-windows'">
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Web" />
   </ItemGroup>
 
   <Import Project="..\Unosquare.FFME.MediaElement\Unosquare.FFME.MediaElement.projitems" Label="Shared" />

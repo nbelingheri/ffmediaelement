@@ -2,8 +2,8 @@
 
 [![Join the chat at https://gitter.im/ffmediaelement/Lobby](https://badges.gitter.im/ffmediaelement/Lobby.svg)](https://gitter.im/ffmediaelement/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Analytics](https://ga-beacon.appspot.com/UA-8535255-2/unosquare/ffmediaelement/)](https://github.com/igrigorik/ga-beacon)
-[![NuGet version](https://badge.fury.io/nu/FFME.Windows.svg)](https://badge.fury.io/nu/FFME.Windows)
-[![NuGet](https://img.shields.io/nuget/dt/FFME.Windows.svg)](https://www.nuget.org/packages/FFME.Windows)
+[![NuGet version](https://img.shields.io/nuget/vpre/nbelingheri.FFME.Windows.svg)](https://www.nuget.org/packages/nbelingheri.FFME.Windows)
+[![NuGet](https://img.shields.io/nuget/dt/nbelingheri.FFME.Windows.svg)](https://www.nuget.org/packages/nbelingheri.FFME.Windows)
 [![Build status](https://ci.appveyor.com/api/projects/status/ppqeayanucj1hadj?svg=true)](https://ci.appveyor.com/project/geoperez/ffmediaelement)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c439ad57c68e43f796401467bca06e9e)](https://www.codacy.com/app/UnosquareLabs/ffmediaelement?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=unosquare/ffmediaelement&amp;utm_campaign=Badge_Grade)
 
@@ -13,9 +13,9 @@
 
 ## Status Updates
 - If you would like to support this project, you can show your appreciation via [PayPal.Me](https://www.paypal.me/mariodivece/50usd)
-- Current Status: (2024-06-26) - BETA 1 Release 7.0.361.1 is now available, (see the <a href="https://github.com/unosquare/ffmediaelement/releases">Releases</a>)
-- NuGet Package available here: https://www.nuget.org/packages/FFME.Windows/
-- FFmpeg Version: <a href="https://ffmpeg.org/download.html">7.0</a> -- Make sure you download one built as a SHARED library and for your right architecture (typically x64)
+- Current Status: FFME 9.0.362 (beta) targets .NET 11 (`net11.0-windows`) and FFmpeg 9.0. .NET Framework 4.8 is no longer supported.
+- NuGet Package available here: https://www.nuget.org/packages/nbelingheri.FFME.Windows/
+- FFmpeg Version: <a href="https://ffmpeg.org/download.html">9.0</a> -- Make sure you download one built as a SHARED library and for your right architecture (typically x64)
 - BREAKING CHANGE: Starting realease 4.1.320 the `Source` dependency property has been downgraded to a notification property. Please use the asynchronous `Open` and `Close` methods instead.
 - I have been learning a ton while writing this project. You can find my latest video and rendering experiments <a href="https://github.com/mariodivece/ffplaysharp">here (if you are curious)</a>
 
@@ -27,11 +27,11 @@
 
 1. Open Visual Studio and create a new WPF Application.
    
-   **Target Framework must be set to .net 5.0 or above**
+   **Target Framework must be set to .NET 11 (`net11.0-windows`) or above**
    
 2. Install the NuGet Package from your Package Manager Console: 
    ```bash
-   PM> Install-Package FFME.Windows
+   PM> Install-Package nbelingheri.FFME.Windows -Prerelease
 3. Acquire the FFmpeg shared binaries (either 64 or 32 bit, depending on your app's target architecture)
    
    *by either*
@@ -44,20 +44,20 @@
 * Downloading a compatible build 
 
   For a x64 build 
-  * the **dlls** are located here, [7.0 x64](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z),
+  * the **dlls** are located here, [9.0 x64](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z),
    combine the contents of the `bin` folder of both downloaded folders into a separate folder e.g `c:\ffmpeg\x64`.
- 
+
    *The resulting contents of the folder e.g `c:\ffmpeg\x64` should be so*
-     - avcodec-59.dll
-     - avdevice-59.dll
-     - avfilter-8.dll
-     - avformat-59.dll
-     - avutil-58.dll
+     - avcodec-63.dll
+     - avdevice-63.dll
+     - avfilter-12.dll
+     - avformat-63.dll
+     - avutil-61.dll
      - ffmpeg.exe
      - ffplay.exe
      - ffprobe.exe
-     - swresample-4.dll
-     - swscale-6.dll
+     - swresample-7.dll
+     - swscale-10.dll
      
 4. Within your application's startup code (Main method)
    
@@ -144,11 +144,11 @@ A high-level diagram is provided as additional reference below.
 
 *Please note that I am unable to distribute FFmpeg's binaries because I don't know if I am allowed to do so. Follow the instructions below to compile, run and test FFME.*
 
-1. Clone this repository and make sure you have <a href="https://dotnet.microsoft.com/download/dotnet-core/3.1">.Net Core 3.1 or above</a> installed.
+1. Clone this repository and make sure you have the <a href="https://dotnet.microsoft.com/download/dotnet/11.0">.NET 11 SDK</a> installed.
 2. Download the FFmpeg **shared** binaries for your target architecture: <a href="https://ffmpeg.org/download.html">FFmpeg Windows Downloads</a>.
 3. Extract the contents of the <code>zip</code> file you just downloaded and go to the <code>bin</code> folder that got extracted. You should see 3 <code>exe</code> files and multiple <code>dll</code> files. Select and copy all of them.
 4. Now paste all files from the prior step onto a well-known folder. Take note of the full path. (I used `c:\ffmpeg\`)
-5. Open the solution and set the <code>Unosquare.FFME.Windows.Sample</code> project as the startup project. You can do this by right clicking on the project and selecting <code>Set as startup project</code>. Please note that you will need Visual Studio 2019 with dotnet 5.0 SDK for your target architecture installed.
+5. Open the solution and set the <code>Unosquare.FFME.Windows.Sample</code> project as the startup project. You can do this by right clicking on the project and selecting <code>Set as startup project</code>. Please note that you will need Visual Studio 2026 with the .NET 11 SDK installed.
 6. Under the <code>Unosquare.FFME.Windows.Sample</code> project, find the file `App.xaml.cs` and under the constructor, locate the line <code>Library.FFmpegDirectory = @"c:\ffmpeg";</code> and replace the path so that it points to the folder where you extracted your FFmpeg binaries (dll files).
 7. Click on <code>Start</code> to run the project.
 8. You should see a sample media player. Click on the <code>Open</code> icon located at the bottom right and enter a URL or path to a media file.

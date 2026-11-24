@@ -1,5 +1,5 @@
-version: '7.0.361.{build}'
-image: Visual Studio 2019 Preview
+version: '9.0.362.{build}'
+image: Visual Studio 2022
 configuration:
 - Release
 platform: Any CPU
@@ -18,7 +18,10 @@ environment:
   access_token:
        secure: HzWdswNyfQbQ0vLk9IQyO+Ei9mxoPYp9rvv6HPhtC9J/Fm7EHRzyV953pbPRXI9I
 before_build:
-- nuget restore -verbosity quiet
+- ps: |
+        Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+        .\dotnet-install.ps1 -Channel 11.0 -InstallDir "$env:ProgramFiles\dotnet"
+- dotnet restore Unosquare.FFME.sln --verbosity quiet
 - ps: |
         if(-Not $env:APPVEYOR_PULL_REQUEST_TITLE)
         {
@@ -26,9 +29,7 @@ before_build:
             cinst docfx -y --no-progress
         }
 build_script:
-- cd Unosquare.FFME.Windows.Sample
-- msbuild /p:Configuration=Release /verbosity:quiet
-- cd ..
+- dotnet build Unosquare.FFME.sln --configuration Release --no-restore --verbosity quiet -p:FfmeBuildNumber=%APPVEYOR_BUILD_NUMBER%
 after_build:
 - ps: |
         if(-Not $env:APPVEYOR_PULL_REQUEST_TITLE)
@@ -38,7 +39,7 @@ after_build:
             git config --global core.autocrlf false
             git config --global user.email $env:op_build_user_email
             git config --global user.name $env:op_build_user
-            git clone https://github.com/unosquare/ffmediaelement.git -b gh-pages origin_site -q
+            git clone https://github.com/nbelingheri/ffmediaelement.git -b gh-pages origin_site -q
             git clone -b documentation https://github.com/unosquare/best-practices.git -q
             docfx docfx.json --logLevel Error
             Copy-Item origin_site/.git _site -recurse

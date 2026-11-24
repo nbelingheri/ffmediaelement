@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+	Version scheme (same as prior releases, e.g. 7.0.361.1 / 7.0.361-beta.1):
+	  Assembly/File: {FFmpeg major}.{FFmpeg minor}.{FFME release}.{build number}
+	  Package:       {FFmpeg major}.{FFmpeg minor}.{FFME release}-{FfmePrerelease}.{build number}
+	CI overrides FfmeBuildNumber (e.g. -p:FfmeBuildNumber=42); local builds use the default.
+	Clear FfmePrerelease to publish a stable package.
+  -->
+  <PropertyGroup>
+	<FFmpegVersion>9.0</FFmpegVersion>
+	<FfmeRelease>362</FfmeRelease>
+	<FfmePrerelease>beta</FfmePrerelease>
+	<FfmeBuildNumber Condition="'$(FfmeBuildNumber)' == ''">1</FfmeBuildNumber>
+	<VersionPrefix>$(FFmpegVersion).$(FfmeRelease)</VersionPrefix>
+	<Version Condition="'$(FfmePrerelease)' != ''">$(VersionPrefix)-$(FfmePrerelease).$(FfmeBuildNumber)</Version>
+	<Version Condition="'$(FfmePrerelease)' == ''">$(VersionPrefix).$(FfmeBuildNumber)</Version>
+	<AssemblyVersion>$(VersionPrefix).$(FfmeBuildNumber)</AssemblyVersion>
+	<FileVersion>$(VersionPrefix).$(FfmeBuildNumber)</FileVersion>
+  </PropertyGroup>
+
+</Project>

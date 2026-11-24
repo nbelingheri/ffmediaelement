@@ -1,0 +1,58 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Path: Unosquare.FFME.sln
+      Library_Project: Unosquare.FFME.Windows\Unosquare.FFME.Windows.csproj
+      Configuration: Release
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install the .NET workload
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '11.0.x'
+
+    # Version is {FFmpeg major}.{FFmpeg minor}.{FFME release}.{run number}, package 9.0.362-beta.42 / assembly 9.0.362.42 - see Directory.Build.props
+    - name: Set Build Number
+      run: echo "FfmeBuildNumber=${{ github.run_number }}" >> $env:GITHUB_ENV
+
+    - name: Clean
+      run: |
+        dotnet clean $env:Solution_Path --configuration $env:Configuration
+        dotnet nuget locals all --clear
+
+    - name: Restore
+      run: dotnet restore $env:Solution_Path
+
+    - name: Build Libraries and Sample
+      run: dotnet build $env:Solution_Path --configuration $env:Configuration --no-restore -p:FfmeBuildNumber=$env:FfmeBuildNumber
+
+    - name: Pack Library Projects
+      run: dotnet pack $env:Library_Project --no-build --configuration $env:Configuration -o out -p:FfmeBuildNumber=$env:FfmeBuildNumber
+
+    - name: Upload Packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: out\*.nupkg
+
+    - name: Publish to NuGet.org
+      if: github.event_name != 'pull_request'
+      run: dotnet nuget push .\out\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate

@@ -1,20 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop" ToolsVersion="Current">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <Choose>
-    <When Condition="'$(Configuration)' == 'debug'">
-      <PropertyGroup>
-        <TargetFrameworks>net8.0-windows</TargetFrameworks>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <TargetFrameworks>net8.0-windows;net48</TargetFrameworks>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
-  
   <PropertyGroup>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
@@ -29,11 +17,8 @@
     <NeutralLanguage>en</NeutralLanguage>
     
     <RepositoryType>GitHub</RepositoryType>
-    <RepositoryUrl>https://github.com/unosquare/ffmediaelement</RepositoryUrl>
+    <RepositoryUrl>https://github.com/nbelingheri/ffmediaelement</RepositoryUrl>
 
-    <Version>7.0.361-beta.1</Version>
-    <AssemblyVersion>7.0.361.1</AssemblyVersion>
-    <FileVersion>7.0.361.1</FileVersion>
     <LangVersion>preview</LangVersion>
 
     <Authors>Mario Di Vece, and Contributors to the FFME project</Authors>
@@ -41,7 +26,7 @@
     <Product>Unosquare FFME Reference Media Player</Product>
     <Description>Reference implementation of a media player using the FFME</Description>
     <Copyright>Unosquare SA de CV, Mario Di Vece, and Contributors, (C) 2015-2024</Copyright>
-    <PackageProjectUrl>https://github.com/unosquare/ffmediaelement</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/nbelingheri/ffmediaelement</PackageProjectUrl>
     <ApplicationIcon>ffmpeg.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -73,7 +58,7 @@
 
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="9.0.1.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.401">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="11.0.100">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

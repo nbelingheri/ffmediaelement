@@ -55,11 +55,7 @@ public static partial class Utilities
     /// <returns>The string with the replacement.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string ReplaceOrdinal(this string source, string find, string replace) =>
-#if NETCOREAPP
         source?.Replace(find, replace, StringComparison.Ordinal);
-#else
-        source?.Replace(find, replace);
-#endif
 
     /// <summary>
     /// Determines if the string contains the search term in ordinal (binary) comparison.
