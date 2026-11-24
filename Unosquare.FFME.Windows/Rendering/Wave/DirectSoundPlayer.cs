@@ -184,6 +184,14 @@
 
             if (alsoManaged)
             {
+                // Release the DirectSound COM objects deterministically and in dependency order.
+                // Releasing the device frees every buffer it created, so if these RCWs were left to the
+                // finalizer (which releases them in arbitrary order) a buffer could be released after
+                // its device, calling into freed memory and crashing the process.
+                ReleaseComObject(ref AudioBackBuffer);
+                ReleaseComObject(ref AudioRenderBuffer);
+                ReleaseComObject(ref DirectSoundDriver);
+
                 // Dispose DirectSound buffer wait handles
                 PlaybackEndedEventWaitHandle?.Dispose();
                 FrameStartEventWaitHandle?.Dispose();
@@ -195,6 +203,24 @@
         #endregion
 
         #region Helper Methods
+
+        /// <summary>
+        /// Releases the COM object behind the given runtime callable wrapper and clears the reference.
+        /// </summary>
+        /// <typeparam name="T">The COM interface type.</typeparam>
+        /// <param name="comObject">The reference to the COM object.</param>
+        private static void ReleaseComObject<T>(ref T comObject)
+            where T : class
+        {
+            var target = comObject;
+            comObject = null;
+
+            if (target == null || !Marshal.IsComObject(target))
+                return;
+
+            try { Marshal.FinalReleaseComObject(target); }
+            catch { /* Ignore exception and continue */ }
+        }
 
         /// <summary>
         /// Enumerates the devices.
