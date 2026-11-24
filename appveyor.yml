@@ -20,8 +20,8 @@ environment:
 before_build:
 - ps: |
         Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
-        .\dotnet-install.ps1 -Channel 11.0 -InstallDir "$env:ProgramFiles\dotnet"
-- dotnet restore Unosquare.FFME.sln --verbosity quiet
+        .\dotnet-install.ps1 -JSonFile global.json -InstallDir "$env:ProgramFiles\dotnet"
+- dotnet restore Unosquare.FFME.slnx --locked-mode --verbosity quiet
 - ps: |
         if(-Not $env:APPVEYOR_PULL_REQUEST_TITLE)
         {
@@ -29,7 +29,7 @@ before_build:
             cinst docfx -y --no-progress
         }
 build_script:
-- dotnet build Unosquare.FFME.sln --configuration Release --no-restore --verbosity quiet -p:FfmeBuildNumber=%APPVEYOR_BUILD_NUMBER%
+- dotnet build Unosquare.FFME.slnx --configuration Release --no-restore --verbosity quiet -p:FfmeBuildNumber=%APPVEYOR_BUILD_NUMBER%
 after_build:
 - ps: |
         if(-Not $env:APPVEYOR_PULL_REQUEST_TITLE)

@@ -19,4 +19,35 @@
 	<FileVersion>$(VersionPrefix).$(FfmeBuildNumber)</FileVersion>
   </PropertyGroup>
 
+  <!-- Compiler and analysis settings shared by all projects -->
+  <PropertyGroup>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<AnalysisLevel>11.0</AnalysisLevel>
+	<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	<NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <!-- Shared assembly and package metadata -->
+  <PropertyGroup>
+	<Authors>Mario Di Vece, and Contributors to the FFME project</Authors>
+	<Company>Unosquare SA de CV</Company>
+	<Copyright>Unosquare SA de CV, Mario Di Vece, and Contributors, (C) 2015-2024</Copyright>
+	<PackageProjectUrl>https://github.com/nbelingheri/ffmediaelement</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/nbelingheri/ffmediaelement</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Reproducible restores: commit packages.lock.json; CI fails if it is out of date -->
+  <PropertyGroup>
+	<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <!-- Deterministic, source-linked builds on CI servers -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' or '$(APPVEYOR)' != ''">
+	<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	<RestoreLockedMode>true</RestoreLockedMode>
+  </PropertyGroup>
+
 </Project>

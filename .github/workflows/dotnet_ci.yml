@@ -6,8 +6,21 @@ on:
   pull_request:
     branches: [ master ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Manual runs from the Actions tab; only manual runs can publish
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the packages to NuGet.org'
+        type: boolean
+        default: false
+
+# Least privilege by default; only the publish job may request an OIDC token
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -15,31 +28,30 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Solution_Path: Unosquare.FFME.sln
+      Solution_Path: Unosquare.FFME.slnx
       Library_Project: Unosquare.FFME.Windows\Unosquare.FFME.Windows.csproj
       Configuration: Release
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
-    # Install the .NET workload
+    # Installs the SDK pinned in global.json and caches NuGet packages keyed on packages.lock.json
     - name: Install .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: '11.0.x'
+        global-json-file: global.json
+        cache: true
+        cache-dependency-path: '**/packages.lock.json'
 
     # Version is {FFmpeg major}.{FFmpeg minor}.{FFME release}.{run number}, package 9.0.362-beta.42 / assembly 9.0.362.42 - see Directory.Build.props
     - name: Set Build Number
       run: echo "FfmeBuildNumber=${{ github.run_number }}" >> $env:GITHUB_ENV
 
-    - name: Clean
-      run: |
-        dotnet clean $env:Solution_Path --configuration $env:Configuration
-        dotnet nuget locals all --clear
-
     - name: Restore
-      run: dotnet restore $env:Solution_Path
+      run: dotnet restore $env:Solution_Path --locked-mode
 
     - name: Build Libraries and Sample
       run: dotnet build $env:Solution_Path --configuration $env:Configuration --no-restore -p:FfmeBuildNumber=$env:FfmeBuildNumber
@@ -48,11 +60,43 @@ jobs:
       run: dotnet pack $env:Library_Project --no-build --configuration $env:Configuration -o out -p:FfmeBuildNumber=$env:FfmeBuildNumber
 
     - name: Upload Packages
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: nuget-packages
-        path: out\*.nupkg
+        path: |
+          out\*.nupkg
+          out\*.snupkg
 
+  # Keyless publishing via NuGet Trusted Publishing: https://learn.microsoft.com/nuget/nuget-org/trusted-publishing
+  # Gates: manual run on master by the repo owner, plus approval on the 'nuget-release' environment.
+  # The nuget.org policy only accepts tokens from this workflow file running in that environment.
+  publish:
+    needs: build
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish &&
+      github.ref == 'refs/heads/master' &&
+      github.actor == github.repository_owner
+
+    runs-on: ubuntu-latest
+    environment: nuget-release
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download Packages
+      uses: actions/download-artifact@v8
+      with:
+        name: nuget-packages
+        path: out
+
+    - name: NuGet Login (OIDC to short-lived API key)
+      id: login
+      uses: NuGet/login@v1
+      with:
+        user: ${{ vars.NUGET_USER }}
+
+    # Pushes the .nupkg and its matching .snupkg symbol package
     - name: Publish to NuGet.org
-      if: github.event_name != 'pull_request'
-      run: dotnet nuget push .\out\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate
+      run: dotnet nuget push "out/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate
