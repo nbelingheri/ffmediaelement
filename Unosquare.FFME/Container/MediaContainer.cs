@@ -6,6 +6,10 @@ using FFmpeg.AutoGen;
 using Primitives;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -28,6 +32,11 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     /// The exception message no input context.
     /// </summary>
     private const string ExceptionMessageNoInputContext = "Stream InputContext has not been initialized.";
+
+    /// <summary>
+    /// The FFmpeg UDP protocol option that selects the local address the socket binds to.
+    /// </summary>
+    private const string UdpLocalAddressOptionName = "localaddr";
 
     /// <summary>
     /// The logging handler.
@@ -622,6 +631,95 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
     #region Private Stream Methods
 
     /// <summary>
+    /// Restores the pre-FFmpeg 9 bind behavior for unicast UDP inputs whose URL host is a remote address.
+    /// </summary>
+    /// <remarks>
+    /// Starting with FFmpeg 9, a unicast UDP input without a <c>localaddr</c> option binds its socket to the URL host,
+    /// whereas earlier versions bound to the wildcard address. A URL that names the sending device
+    /// (e.g. <c>udp://192.168.1.10:8554</c>) then fails with WSAEADDRNOTAVAIL, reported as
+    /// "No such device or address". Binding to an address that does not belong to this machine can never succeed,
+    /// so in that case the wildcard address is used, as it was before.
+    /// </remarks>
+    /// <param name="options">The input private options.</param>
+    /// <param name="mediaSource">The media source URL.</param>
+    private static void ApplyUdpLocalAddressFallback(FFDictionary options, string mediaSource)
+    {
+        if (options.HasKey(UdpLocalAddressOptionName, false))
+            return;
+
+        var localAddress = GetUdpFallbackLocalAddress(mediaSource);
+        if (localAddress != null)
+            options.Set(UdpLocalAddressOptionName, localAddress, true);
+    }
+
+    /// <summary>
+    /// Gets the wildcard local address to bind a UDP input to, or null when FFmpeg's default should be kept.
+    /// </summary>
+    /// <param name="mediaSource">The media source URL.</param>
+    /// <returns>The wildcard address, or null.</returns>
+    private static string GetUdpFallbackLocalAddress(string mediaSource)
+    {
+        if (Uri.TryCreate(mediaSource?.Trim(), UriKind.Absolute, out var uri) == false)
+            return null;
+
+        if (uri.Scheme.Equals("udp", StringComparison.OrdinalIgnoreCase) == false &&
+            uri.Scheme.Equals("udplite", StringComparison.OrdinalIgnoreCase) == false)
+            return null;
+
+        if (HasQueryParameter(uri.Query, UdpLocalAddressOptionName))
+            return null;
+
+        if (IPAddress.TryParse(uri.DnsSafeHost, out var hostAddress) == false)
+            return null;
+
+        if (IPAddress.Any.Equals(hostAddress) || IPAddress.IPv6Any.Equals(hostAddress) ||
+            IPAddress.IsLoopback(hostAddress) || IsMulticastAddress(hostAddress) || IsLocalAddress(hostAddress))
+            return null;
+
+        return hostAddress.AddressFamily == AddressFamily.InterNetworkV6 ? "::" : "0.0.0.0";
+    }
+
+    /// <summary>
+    /// Determines whether the URL query string contains the given parameter.
+    /// </summary>
+    /// <param name="query">The URL query string.</param>
+    /// <param name="name">The parameter name.</param>
+    /// <returns>True if the parameter is present.</returns>
+    private static bool HasQueryParameter(string query, string name) =>
+        string.IsNullOrEmpty(query) == false && query.TrimStart('?')
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Any(p => p.Split('=', 2)[0].Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Determines whether the address is a multicast address.
+    /// </summary>
+    /// <param name="address">The address.</param>
+    /// <returns>True if the address is multicast.</returns>
+    private static bool IsMulticastAddress(IPAddress address) =>
+        address.AddressFamily == AddressFamily.InterNetworkV6
+            ? address.IsIPv6Multicast
+            : (address.GetAddressBytes()[0] & 0xF0) == 0xE0;
+
+    /// <summary>
+    /// Determines whether the address is assigned to a network interface of this machine.
+    /// </summary>
+    /// <param name="address">The address.</param>
+    /// <returns>True if the address is local, or if local addresses cannot be determined.</returns>
+    private static bool IsLocalAddress(IPAddress address)
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .SelectMany(n => n.GetIPProperties().UnicastAddresses)
+                .Any(a => a.Address.Equals(address));
+        }
+        catch (NetworkInformationException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Initializes the input context to start read operations.
     /// This does NOT create the stream components and therefore, there needs to be a call
     /// to the Open method.
@@ -652,6 +750,9 @@ internal sealed unsafe class MediaContainer : IDisposable, ILoggingSource
             {
                 if (privateOptions.HasKey(ContainerConfiguration.ScanAllPmts) == false)
                     privateOptions.Set(ContainerConfiguration.ScanAllPmts, "1", true);
+
+                if (CustomInputStream == null)
+                    ApplyUdpLocalAddressFallback(privateOptions, MediaSource);
 
                 // Create the input context
                 StreamInitializeInputContext();
